@@ -20,34 +20,35 @@ namespace CsvConverter.Controllers
             {
                 CsvManager manager = new CsvManager(file);
 
-                string zipFile = manager.zipFilePath;
+                string downloadPath = manager.GenerateDownloadPath();
 
                 //zip it all or not
 
                 ViewBag.Message = "The process is complete! Here's your download link: ";
-                ViewBag.DownloadLink = zipFile;
+                ViewBag.DownloadLink = Url.Encode(downloadPath);
                 return View("Index");
             }
             catch (Exception ex)
             {
-                ViewBag.Message = "File upload failed!! Exception: " + ex.Message;
+                ViewBag.Message = "File upload failed! " + ex.Message;
                 return View("Index");
             }
         }
 
         public ActionResult Download(string file)
         {
-            if (!System.IO.File.Exists(file))
+            var path = Path.Combine(Server.MapPath("~/UploadedFiles"),  file);
+            if (!System.IO.File.Exists(path))
             {
                 return HttpNotFound();
             }
 
-            string downloadName = new FileInfo(file).Name;
+            string downloadName = new FileInfo(path).Name;
 
-            var fileBytes = System.IO.File.ReadAllBytes(file);
+            var fileBytes = System.IO.File.ReadAllBytes(path);
             var response = new FileContentResult(fileBytes, "application/octet-stream")
             {
-                FileDownloadName = new FileInfo(file).Name
+                FileDownloadName = downloadName
             };
             return response;
         }

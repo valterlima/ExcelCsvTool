@@ -14,33 +14,38 @@ namespace CsvConverter.Controllers.src
         private string fileName;
         private DataSet result;
         private List<string> csvFiles;
+        private List<FileInfo> files;
         private DirectoryInfo tempDirectory;
-        public string zipFilePath { get; set; }
+        public string zipFilePath;
+        public string zipFileName { get; set; }
 
         public CsvManager(HttpPostedFileBase file)
         {
             this.file = file;
             this.ReadFile();
             this.GenerateCsvFiles();
-            this.zipAllFiles();
         }
 
         private void ReadFile()
         {
-            if (file.ContentLength <= 0)
+            if (this.file.ContentLength <= 0)
             {
                 throw new Exception("File is empty.");
+            }
+            else if (file.ContentLength > 1 * 1024 * 1024)
+            {
+                throw new Exception("File is too large. (Bigger than 1 MB)");
             }
             else
             {
                 MemoryStream ms = new MemoryStream();
-                file.InputStream.CopyTo(ms);
+                this.file.InputStream.CopyTo(ms);
 
                 IExcelDataReader reader = null;
                 try
                 {
-                    string type = file.ContentType;
-                    this.fileName = file.FileName.Replace(".xlsx", "").Replace(".xls", "");
+                    string type = this.file.ContentType;
+                    this.fileName = this.file.FileName.Replace(".xlsx", "").Replace(".xls", "");
                     //application/vnd.ms-excel
                     //application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
 
@@ -54,24 +59,24 @@ namespace CsvConverter.Controllers.src
                     }
                     else
                     {
-                        throw new Exception("Invalid format: " + type);
+                        throw new Exception("Invalid format");
                     }
+
+                    this.result = reader.AsDataSet();
+                    reader.Close();
                 }
                 catch (Exception ex)
                 {
-                    throw new Exception("ReaderFactory error", ex);
-                }
-                finally
-                {
-                    this.result = reader.AsDataSet();
-                    reader.Close();
+                    throw new Exception(ex.Message);
                 }
             }
         }
 
         private void GenerateCsvFiles()
         {
-            List<string> csvFiles = new List<string>();
+            this.csvFiles = new List<string>();
+            this.files = new List<FileInfo>();
+
             string fileName = this.fileName;
             string directoryName = DateTime.UtcNow.ToString("yyyy-MM-ddTHH-mm-ssZ");
             var saveDirPath = Path.Combine(System.Web.HttpContext.Current.Server.MapPath("~/UploadedFiles"), directoryName);
@@ -101,22 +106,40 @@ namespace CsvConverter.Controllers.src
                 csv.Close();
 
                 csvFiles.Add(saveFilePath);
+                files.Add(new FileInfo(saveFilePath));
             }
+        }
 
-            this.csvFiles = csvFiles;
+        public string GenerateDownloadPath()
+        {
+            if (this.csvFiles.Count > 1)
+            {
+                this.zipAllFiles();
+                return this.zipFileName;
+            }
+            else if (this.csvFiles.Count == 1)
+            {
+                return Path.Combine(this.tempDirectory.Name, this.files[0].Name);
+            }
+            else
+            {
+                return "";
+            }
         }
 
         private void zipAllFiles()
         {
-            string zipFilePath = Path.Combine(this.tempDirectory.Parent.FullName, this.tempDirectory.Name + "." + this.fileName + ".zip");
+            string zipFileName = this.tempDirectory.Name + "." + this.fileName + ".zip";
+            string zipFilePath = Path.Combine(this.tempDirectory.Parent.FullName, zipFileName);
 
             try
             {
                 ZipFile.CreateFromDirectory(this.tempDirectory.FullName, zipFilePath);
 
                 this.zipFilePath = zipFilePath;
+                this.zipFileName = zipFileName;
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 throw new Exception("Error while trying to save files.", ex);
             }
