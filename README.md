@@ -8,25 +8,28 @@ ASP.NET MVC 5 App to convert Excel files to CSV
 ## Dependencies
 Download and install packages with NuGet: 
 
-1. <pre>nuget restore</pre>
+<pre>nuget restore</pre>
 
 ## How to build
 To build you only need **MsBuild** from the .NET Framework
 
-1. <pre>MsBuild.exe .\CsvConverter.sln /t:Build /p:Configuration=Release /p:TargetFramework=v4.6.2</pre>
+<pre>MsBuild.exe .\CsvConverter.sln /t:Build /p:Configuration=Release /p:TargetFramework=v4.6.2</pre>
 
 ## Running
 
 ### Running with IIS Express
-1. <pre>iisexpress.exe /path:"<b>full_path</b>\CsvConverter" /clr:v4.0</pre>
+You need to have IIS Express installed. (It comes with Visual Studio)
+<pre>iisexpress.exe /path:"<b>full_path</b>\CsvConverter" /clr:v4.0</pre>
+
+Browse to http://localhost:8080 or something like that (depends on your config file)
 
 ### Deploy to azure
 1. Fork this repository
 2. Configure your Azure resource to use your forked repo
 
-### Running with docker
+### Running with docker (Only Windows 10)
 
-1. <pre>TODO</pre>
+<pre>TODO</pre>
 
 ### Current validations
 * File size must be < 1 MB. 
