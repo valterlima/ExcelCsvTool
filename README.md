@@ -1,5 +1,5 @@
 # ExcelCsvTool
-ASP.NET MVC 5 App to convert Excel files to CSV
+ASP.NET MVC 5 App to convert Excel files to CSV. Currently supporting Excel 2003- (.xls) and 2007+ (.xlsx), including multiples sheets per file.
 
 ## Requirements
 * [NuGet](https://www.nuget.org/)
