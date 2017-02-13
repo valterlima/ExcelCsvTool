@@ -12,6 +12,11 @@ namespace CsvConverter.Controllers
         {
             return View();
         }
+        [HttpGet]
+        public ActionResult UploadFile()
+        {
+            return RedirectToAction("Index");
+        }
 
         [HttpPost]
         public ActionResult UploadFile(HttpPostedFileBase file)
